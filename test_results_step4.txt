@@ -1,0 +1,77 @@
+=== RUN   TestInputBusIntegration_ControllerStateSync_ShouldFail
+--- PASS: TestInputBusIntegration_ControllerStateSync_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_DualPlayerSync_ShouldFail
+--- PASS: TestInputBusIntegration_DualPlayerSync_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_ControllerRegisterAccess_ShouldFail
+--- PASS: TestInputBusIntegration_ControllerRegisterAccess_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_GameLoopIntegration_ShouldFail
+    input_bus_integration_test.go:187: Processing frame 1 with 1 input events
+    input_bus_integration_test.go:187: Processing frame 2 with 1 input events
+    input_bus_integration_test.go:187: Processing frame 3 with 0 input events
+    input_bus_integration_test.go:187: Processing frame 4 with 1 input events
+    input_bus_integration_test.go:187: Processing frame 5 with 1 input events
+--- PASS: TestInputBusIntegration_GameLoopIntegration_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_InputStateManagement_ShouldFail
+--- PASS: TestInputBusIntegration_InputStateManagement_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_ControllerReset_ShouldFail
+--- PASS: TestInputBusIntegration_ControllerReset_ShouldFail (0.00s)
+=== RUN   TestInputBusIntegration_MemoryMappedIO_ShouldFail
+--- PASS: TestInputBusIntegration_MemoryMappedIO_ShouldFail (0.00s)
+=== RUN   TestInputDebugLogging_KeyboardEventLogging_ShouldFail
+--- PASS: TestInputDebugLogging_KeyboardEventLogging_ShouldFail (0.00s)
+=== RUN   TestInputDebugLogging_PerformanceMetrics_ShouldFail
+    input_debug_logging_test.go:146: Performance logging test: 100 events processed in 18.95µs
+--- PASS: TestInputDebugLogging_PerformanceMetrics_ShouldFail (0.00s)
+=== RUN   TestInputDebugLogging_StateChangeLogging_ShouldFail
+--- PASS: TestInputDebugLogging_StateChangeLogging_ShouldFail (0.00s)
+=== RUN   TestInputDebugLogging_ErrorConditionLogging_ShouldFail
+--- PASS: TestInputDebugLogging_ErrorConditionLogging_ShouldFail (0.00s)
+=== RUN   TestInputDebugLogging_DetailedEventTracing_ShouldFail
+    input_debug_logging_test.go:409: Event tracing test captured 8 events
+    input_debug_logging_test.go:411:   [0] EVENT[0] P1 Start PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [1] EVENT[1] P2 Start PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [2] EVENT[2] P1 A PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [3] EVENT[3] P2 B PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [4] EVENT[4] P1 Right PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [5] EVENT[5] P2 Left PRESS at 12:20:56.889
+    input_debug_logging_test.go:411:   [6] EVENT[6] P1 Start RELEASE at 12:20:56.889
+    input_debug_logging_test.go:411:   [7] EVENT[7] P2 Start RELEASE at 12:20:56.889
+--- PASS: TestInputDebugLogging_DetailedEventTracing_ShouldFail (0.00s)
+PASS
+ok  	gones/internal/sdl	0.012s
+=== RUN   TestKeyboardInputPipeline_SDL2EventToNESController_ShouldFail
+--- PASS: TestKeyboardInputPipeline_SDL2EventToNESController_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_MultipleSimultaneousButtons_ShouldFail
+--- PASS: TestKeyboardInputPipeline_MultipleSimultaneousButtons_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_Player2Input_ShouldFail
+--- PASS: TestKeyboardInputPipeline_Player2Input_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_TwoPlayerSimultaneous_ShouldFail
+--- PASS: TestKeyboardInputPipeline_TwoPlayerSimultaneous_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_RapidButtonPressing_ShouldFail
+--- PASS: TestKeyboardInputPipeline_RapidButtonPressing_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_DirectionalInputHandling_ShouldFail
+--- PASS: TestKeyboardInputPipeline_DirectionalInputHandling_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_InputLatencyMeasurement_ShouldFail
+    keyboard_input_pipeline_test.go:326: Input pipeline latency measurement: 9.917µs total, 99ns average per event
+--- PASS: TestKeyboardInputPipeline_InputLatencyMeasurement_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_ErrorConditions_ShouldFail
+--- PASS: TestKeyboardInputPipeline_ErrorConditions_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_EndToEndIntegration_ShouldFail
+    keyboard_input_pipeline_test.go:458: Testing: Game start - both players press Start
+    keyboard_input_pipeline_test.go:458: Testing: Level begins - players move in different directions
+    keyboard_input_pipeline_test.go:458: Testing: Combat - both players jump and shoot
+--- PASS: TestKeyboardInputPipeline_EndToEndIntegration_ShouldFail (0.00s)
+=== RUN   TestKeyboardInputPipeline_BusIntegration_ShouldFail
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 2 read 0: expected pressed=false, got pressed=true (raw value=0x41)
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 8 read 0: expected pressed=false, got pressed=true (raw value=0x41)
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 8 read 1: expected pressed=false, got pressed=true (raw value=0x41)
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 128 read 0: expected pressed=false, got pressed=true (raw value=0x41)
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 128 read 1: expected pressed=false, got pressed=true (raw value=0x41)
+    keyboard_input_pipeline_test.go:545: EXPECTED FAILURE: Button 128 read 3: expected pressed=false, got pressed=true (raw value=0x41)
+--- FAIL: TestKeyboardInputPipeline_BusIntegration_ShouldFail (0.00s)
+FAIL
+FAIL	gones/internal/sdl	0.007s
+FAIL
+testing: warning: no tests to run
+PASS
+ok  	gones/internal/sdl	0.007s [no tests to run]

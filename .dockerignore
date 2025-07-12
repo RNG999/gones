@@ -1,0 +1,42 @@
+# Build artifacts
+gones
+*.exe
+dist/
+coverage.out
+coverage.html
+
+# Development files
+.git/
+.gitignore
+*.md
+docs/
+.vscode/
+.idea/
+
+# Test files
+test/
+*_test.go
+
+# Temporary files
+tmp/
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files
+Dockerfile*
+.dockerignore
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Documentation
+README.md
+LICENSE
+CONTRIBUTING.md
+CHANGELOG.md

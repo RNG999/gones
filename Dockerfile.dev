@@ -1,0 +1,46 @@
+# Development Dockerfile for gones NES emulator
+FROM golang:1.23-alpine
+
+# Set up development environment
+WORKDIR /app
+
+# Install development dependencies
+RUN apk add --no-cache \
+    git \
+    make \
+    gcc \
+    musl-dev \
+    pkgconf \
+    sdl2-dev \
+    bash \
+    curl \
+    vim \
+    htop
+
+# Install development tools
+RUN go install github.com/air-verse/air@latest && \
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
+    go install golang.org/x/tools/cmd/goimports@latest && \
+    go install github.com/go-delve/delve/cmd/dlv@latest
+
+# Set environment variables for development
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+
+# Create non-root user for development
+RUN addgroup -g 1001 -S gones && \
+    adduser -u 1001 -S gones -G gones -s /bin/bash
+
+# Create development directories
+RUN mkdir -p /app/roms /app/saves /app/states /app/screenshots /app/config && \
+    chown -R gones:gones /app
+
+# Switch to development user
+USER gones
+
+# Copy go modules for caching
+COPY --chown=gones:gones go.mod go.sum ./
+RUN go mod download
+
+# Default command for development
+CMD ["bash"]

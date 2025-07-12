@@ -1,0 +1,720 @@
+// Package integration provides GUI performance and benchmark tests
+package integration
+
+import (
+	"gones/internal/sdl"
+	"runtime"
+	"testing"
+	"time"
+)
+
+// TestGUIFrameRateConsistency tests frame rate consistency and timing accuracy
+func TestGUIFrameRateConsistency(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping frame rate test in short mode")
+	}
+
+	targetFPS := []int{30, 60, 120}
+
+	for _, fps := range targetFPS {
+		t.Run(formatFPS(fps), func(t *testing.T) {
+			testFrameRateConsistency(t, fps)
+		})
+	}
+}
+
+func testFrameRateConsistency(t *testing.T, targetFPS int) {
+	config := sdl.Config{
+		WindowTitle:  "Frame Rate Test",
+		WindowWidth:  800,
+		WindowHeight: 600,
+		TargetFPS:    targetFPS,
+	}
+
+	manager, err := sdl.NewManager(config)
+	if err != nil {
+		t.Fatalf("Failed to create SDL manager: %v", err)
+	}
+
+	err = manager.Initialize(sdl.SubsystemVideo | sdl.SubsystemEvents)
+	if err != nil {
+		if isSDLNotAvailable(err) {
+			t.Skip("SDL2 not available, skipping frame rate test")
+		}
+		t.Fatalf("Failed to initialize SDL: %v", err)
+	}
+	defer manager.Cleanup()
+
+	window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+	if err != nil {
+		t.Fatalf("Failed to create window: %v", err)
+	}
+
+	renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+	if err != nil {
+		t.Fatalf("Failed to create renderer: %v", err)
+	}
+
+	inputManager, err := manager.CreateInputManager()
+	if err != nil {
+		t.Fatalf("Failed to create input manager: %v", err)
+	}
+
+	// Test frame timing
+	testDuration := 1 * time.Second
+	expectedFrames := int(float64(targetFPS) * testDuration.Seconds())
+	frameTimes := make([]time.Duration, 0, expectedFrames+10)
+
+	start := time.Now()
+	frameStart := start
+	frameCount := 0
+
+	for time.Since(start) < testDuration {
+		manager.StartFrame()
+
+		// Simple rendering
+		err = renderer.SetDrawColor(sdl.Color{R: 128, G: 128, B: 128, A: 255})
+		if err != nil {
+			t.Errorf("Failed to set draw color: %v", err)
+		}
+
+		err = renderer.Clear()
+		if err != nil {
+			t.Errorf("Failed to clear renderer: %v", err)
+		}
+
+		// Draw frame number
+		for i := 0; i < frameCount%100; i++ {
+			err = renderer.DrawPoint(int32(i*8), 50)
+			if err != nil {
+				t.Errorf("Failed to draw point: %v", err)
+			}
+		}
+
+		renderer.Present()
+
+		// Process input
+		_, shouldQuit := inputManager.PollEvents()
+		if shouldQuit {
+			break
+		}
+
+		manager.EndFrame()
+
+		// Record frame time
+		frameEnd := time.Now()
+		frameTimes = append(frameTimes, frameEnd.Sub(frameStart))
+		frameStart = frameEnd
+		frameCount++
+	}
+
+	elapsed := time.Since(start)
+	actualFPS := float64(frameCount) / elapsed.Seconds()
+
+	// Analyze frame timing
+	if len(frameTimes) > 0 {
+		avgFrameTime := calculateAverage(frameTimes)
+		minFrameTime := calculateMin(frameTimes)
+		maxFrameTime := calculateMax(frameTimes)
+		jitter := calculateJitter(frameTimes)
+
+		expectedFrameTime := time.Duration(1000/targetFPS) * time.Millisecond
+
+		t.Logf("Frame rate test results for %d FPS:", targetFPS)
+		t.Logf("  Frames rendered: %d", frameCount)
+		t.Logf("  Test duration: %v", elapsed)
+		t.Logf("  Actual FPS: %.2f", actualFPS)
+		t.Logf("  Expected frame time: %v", expectedFrameTime)
+		t.Logf("  Average frame time: %v", avgFrameTime)
+		t.Logf("  Min frame time: %v", minFrameTime)
+		t.Logf("  Max frame time: %v", maxFrameTime)
+		t.Logf("  Frame jitter: %v", jitter)
+
+		// Performance validation
+		fpsTolerance := float64(targetFPS) * 0.1 // 10% tolerance
+		if actualFPS < float64(targetFPS)-fpsTolerance {
+			t.Logf("Warning: Actual FPS %.2f is below target %d (tolerance: %.1f)",
+				actualFPS, targetFPS, fpsTolerance)
+		}
+
+		// Frame time consistency
+		jitterThreshold := expectedFrameTime / 4 // 25% of expected frame time
+		if jitter > jitterThreshold {
+			t.Logf("Warning: Frame jitter %v exceeds threshold %v", jitter, jitterThreshold)
+		}
+	}
+}
+
+// BenchmarkGUIRenderingThroughput benchmarks rendering throughput
+func BenchmarkGUIRenderingThroughput(b *testing.B) {
+	config := sdl.Config{
+		WindowTitle:  "Throughput Benchmark",
+		WindowWidth:  800,
+		WindowHeight: 600,
+		TargetFPS:    0, // No frame limiting for benchmark
+	}
+
+	manager, err := sdl.NewManager(config)
+	if err != nil {
+		b.Fatalf("Failed to create SDL manager: %v", err)
+	}
+
+	err = manager.Initialize(sdl.SubsystemVideo)
+	if err != nil {
+		if isSDLNotAvailable(err) {
+			b.Skip("SDL2 not available, skipping benchmark")
+		}
+		b.Fatalf("Failed to initialize SDL: %v", err)
+	}
+	defer manager.Cleanup()
+
+	window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+	if err != nil {
+		b.Fatalf("Failed to create window: %v", err)
+	}
+
+	renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+	if err != nil {
+		b.Fatalf("Failed to create renderer: %v", err)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		// Benchmark frame rendering
+		err = renderer.SetDrawColor(sdl.Color{R: 255, G: 255, B: 255, A: 255})
+		if err != nil {
+			b.Errorf("Failed to set draw color: %v", err)
+		}
+
+		err = renderer.Clear()
+		if err != nil {
+			b.Errorf("Failed to clear renderer: %v", err)
+		}
+
+		// Draw test pattern
+		for j := 0; j < 100; j++ {
+			err = renderer.DrawPoint(int32(j%800), int32((j/800)*6))
+			if err != nil {
+				b.Errorf("Failed to draw point: %v", err)
+			}
+		}
+
+		renderer.Present()
+	}
+}
+
+// BenchmarkGUIDrawCalls benchmarks individual draw call performance
+func BenchmarkGUIDrawCalls(b *testing.B) {
+	subtests := []struct {
+		name string
+		fn   func(*testing.B, *sdl.Renderer)
+	}{
+		{"DrawPoint", benchmarkDrawPoint},
+		{"DrawLine", benchmarkDrawLine},
+		{"DrawRect", benchmarkDrawRect},
+		{"FillRect", benchmarkFillRect},
+	}
+
+	for _, subtest := range subtests {
+		b.Run(subtest.name, func(b *testing.B) {
+			config := sdl.Config{
+				WindowTitle:  "Draw Call Benchmark",
+				WindowWidth:  800,
+				WindowHeight: 600,
+			}
+
+			manager, err := sdl.NewManager(config)
+			if err != nil {
+				b.Fatalf("Failed to create SDL manager: %v", err)
+			}
+
+			err = manager.Initialize(sdl.SubsystemVideo)
+			if err != nil {
+				if isSDLNotAvailable(err) {
+					b.Skip("SDL2 not available, skipping benchmark")
+				}
+				b.Fatalf("Failed to initialize SDL: %v", err)
+			}
+			defer manager.Cleanup()
+
+			window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+			if err != nil {
+				b.Fatalf("Failed to create window: %v", err)
+			}
+
+			renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+			if err != nil {
+				b.Fatalf("Failed to create renderer: %v", err)
+			}
+
+			b.ResetTimer()
+			subtest.fn(b, renderer)
+		})
+	}
+}
+
+func benchmarkDrawPoint(b *testing.B, renderer *sdl.Renderer) {
+	for i := 0; i < b.N; i++ {
+		x := int32(i % 800)
+		y := int32((i / 800) % 600)
+		err := renderer.DrawPoint(x, y)
+		if err != nil {
+			b.Errorf("Failed to draw point: %v", err)
+		}
+	}
+}
+
+func benchmarkDrawLine(b *testing.B, renderer *sdl.Renderer) {
+	for i := 0; i < b.N; i++ {
+		x1 := int32(i % 800)
+		y1 := int32((i / 800) % 600)
+		x2 := int32((i + 100) % 800)
+		y2 := int32(((i + 100) / 800) % 600)
+		err := renderer.DrawLine(x1, y1, x2, y2)
+		if err != nil {
+			b.Errorf("Failed to draw line: %v", err)
+		}
+	}
+}
+
+func benchmarkDrawRect(b *testing.B, renderer *sdl.Renderer) {
+	for i := 0; i < b.N; i++ {
+		rect := &sdl.Rect{
+			X: int32(i % 750),
+			Y: int32((i / 750) % 550),
+			W: 50,
+			H: 50,
+		}
+		err := renderer.DrawRect(rect)
+		if err != nil {
+			b.Errorf("Failed to draw rect: %v", err)
+		}
+	}
+}
+
+func benchmarkFillRect(b *testing.B, renderer *sdl.Renderer) {
+	for i := 0; i < b.N; i++ {
+		rect := &sdl.Rect{
+			X: int32(i % 750),
+			Y: int32((i / 750) % 550),
+			W: 50,
+			H: 50,
+		}
+		err := renderer.FillRect(rect)
+		if err != nil {
+			b.Errorf("Failed to fill rect: %v", err)
+		}
+	}
+}
+
+// BenchmarkGUITextureOperations benchmarks texture operations
+func BenchmarkGUITextureOperations(b *testing.B) {
+	config := sdl.Config{
+		WindowTitle:  "Texture Benchmark",
+		WindowWidth:  800,
+		WindowHeight: 600,
+	}
+
+	manager, err := sdl.NewManager(config)
+	if err != nil {
+		b.Fatalf("Failed to create SDL manager: %v", err)
+	}
+
+	err = manager.Initialize(sdl.SubsystemVideo)
+	if err != nil {
+		if isSDLNotAvailable(err) {
+			b.Skip("SDL2 not available, skipping benchmark")
+		}
+		b.Fatalf("Failed to initialize SDL: %v", err)
+	}
+	defer manager.Cleanup()
+
+	window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+	if err != nil {
+		b.Fatalf("Failed to create window: %v", err)
+	}
+
+	renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+	if err != nil {
+		b.Fatalf("Failed to create renderer: %v", err)
+	}
+
+	// Create texture for benchmark
+	texture, err := renderer.CreateTexture(0x16161804, 1, 256, 240) // RGBA8888, STREAMING
+	if err != nil {
+		b.Fatalf("Failed to create texture: %v", err)
+	}
+	defer texture.Cleanup()
+
+	// Test data
+	testData := make([]uint32, 256*240)
+	for i := range testData {
+		testData[i] = 0xFF0000FF // Red
+	}
+
+	b.Run("TextureUpdate", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			err := texture.UpdateRGBA8888(testData, 256*4)
+			if err != nil {
+				b.Errorf("Failed to update texture: %v", err)
+			}
+		}
+	})
+
+	b.Run("TextureCopy", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			err := renderer.Copy(texture, nil, nil)
+			if err != nil {
+				b.Errorf("Failed to copy texture: %v", err)
+			}
+		}
+	})
+}
+
+// BenchmarkGUIAudioLatency benchmarks audio system latency
+func BenchmarkGUIAudioLatency(b *testing.B) {
+	config := sdl.Config{
+		AudioConfig: sdl.DefaultAudioConfig(),
+	}
+
+	callbackCount := 0
+	config.AudioConfig.Callback = func(samples []float32) {
+		callbackCount++
+		for i := range samples {
+			samples[i] = 0
+		}
+	}
+
+	manager, err := sdl.NewManager(config)
+	if err != nil {
+		b.Fatalf("Failed to create SDL manager: %v", err)
+	}
+
+	err = manager.Initialize(sdl.SubsystemAudio)
+	if err != nil {
+		if isSDLNotAvailable(err) {
+			b.Skip("SDL2 audio not available, skipping benchmark")
+		}
+		b.Fatalf("Failed to initialize SDL audio: %v", err)
+	}
+	defer manager.Cleanup()
+
+	audioDevice, err := manager.CreateAudioDevice(config.AudioConfig)
+	if err != nil {
+		b.Fatalf("Failed to create audio device: %v", err)
+	}
+
+	audioDevice.Play()
+	defer audioDevice.Pause()
+
+	b.ResetTimer()
+
+	// Benchmark audio mixer operations
+	mixer := sdl.NewNESAudioMixer(44100, 2, 1024)
+	testSamples := make([]float32, 100)
+	outputBuffer := make([]float32, 1024*2)
+
+	for i := 0; i < b.N; i++ {
+		// Add samples to mixer
+		for j := range testSamples {
+			testSamples[j] = float32(j) * 0.01
+		}
+		mixer.AddNESSamples(testSamples)
+
+		// Get mixed samples
+		mixer.GetMixedSamples(outputBuffer)
+	}
+}
+
+// TestGUIMemoryUsage tests memory usage and potential leaks
+func TestGUIMemoryUsage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping memory test in short mode")
+	}
+
+	// Force garbage collection before test
+	runtime.GC()
+	var m1 runtime.MemStats
+	runtime.ReadMemStats(&m1)
+
+	config := sdl.Config{
+		WindowTitle:  "Memory Test",
+		WindowWidth:  800,
+		WindowHeight: 600,
+		TargetFPS:    60,
+		AudioConfig:  sdl.DefaultAudioConfig(),
+	}
+
+	config.AudioConfig.Callback = func(samples []float32) {
+		for i := range samples {
+			samples[i] = 0
+		}
+	}
+
+	// Create and destroy multiple SDL managers to test for leaks
+	iterations := 10
+	for i := 0; i < iterations; i++ {
+		manager, err := sdl.NewManager(config)
+		if err != nil {
+			t.Fatalf("Failed to create SDL manager: %v", err)
+		}
+
+		err = manager.Initialize(sdl.SubsystemVideo | sdl.SubsystemAudio | sdl.SubsystemEvents)
+		if err != nil {
+			if isSDLNotAvailable(err) {
+				t.Skip("SDL2 not available, skipping memory test")
+			}
+			t.Fatalf("Failed to initialize SDL: %v", err)
+		}
+
+		// Create components
+		window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+		if err != nil {
+			t.Fatalf("Failed to create window: %v", err)
+		}
+
+		renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+		if err != nil {
+			t.Fatalf("Failed to create renderer: %v", err)
+		}
+
+		_, err = manager.CreateAudioDevice(config.AudioConfig)
+		if err != nil {
+			t.Fatalf("Failed to create audio device: %v", err)
+		}
+
+		inputManager, err := manager.CreateInputManager()
+		if err != nil {
+			t.Fatalf("Failed to create input manager: %v", err)
+		}
+
+		// Do some work
+		for frame := 0; frame < 10; frame++ {
+			err = renderer.Clear()
+			if err != nil {
+				t.Errorf("Failed to clear renderer: %v", err)
+			}
+
+			for j := 0; j < 100; j++ {
+				err = renderer.DrawPoint(int32(j), int32(frame*10))
+				if err != nil {
+					t.Errorf("Failed to draw point: %v", err)
+				}
+			}
+
+			renderer.Present()
+			inputManager.PollEvents()
+		}
+
+		// Clean up
+		err = manager.Cleanup()
+		if err != nil {
+			t.Errorf("Failed to cleanup manager: %v", err)
+		}
+
+		// Force garbage collection between iterations
+		if i%3 == 0 {
+			runtime.GC()
+		}
+	}
+
+	// Force garbage collection after test
+	runtime.GC()
+	var m2 runtime.MemStats
+	runtime.ReadMemStats(&m2)
+
+	// Calculate memory usage
+	allocDiff := m2.TotalAlloc - m1.TotalAlloc
+	heapDiff := int64(m2.HeapInuse) - int64(m1.HeapInuse)
+
+	t.Logf("Memory usage test results:")
+	t.Logf("  Iterations: %d", iterations)
+	t.Logf("  Total allocations: %d bytes", allocDiff)
+	t.Logf("  Heap size difference: %d bytes", heapDiff)
+	t.Logf("  Average allocation per iteration: %d bytes", allocDiff/uint64(iterations))
+
+	// Memory leak detection (heuristic)
+	maxExpectedHeapGrowth := int64(50 * 1024 * 1024) // 50MB threshold
+	if heapDiff > maxExpectedHeapGrowth {
+		t.Logf("Warning: Heap grew by %d bytes, which may indicate memory leaks", heapDiff)
+	}
+}
+
+// TestGUIInputLatency tests input latency and responsiveness
+func TestGUIInputLatency(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping input latency test in short mode")
+	}
+
+	config := sdl.Config{
+		WindowTitle:  "Input Latency Test",
+		WindowWidth:  800,
+		WindowHeight: 600,
+		TargetFPS:    60,
+	}
+
+	manager, err := sdl.NewManager(config)
+	if err != nil {
+		t.Fatalf("Failed to create SDL manager: %v", err)
+	}
+
+	err = manager.Initialize(sdl.SubsystemVideo | sdl.SubsystemEvents)
+	if err != nil {
+		if isSDLNotAvailable(err) {
+			t.Skip("SDL2 not available, skipping input latency test")
+		}
+		t.Fatalf("Failed to initialize SDL: %v", err)
+	}
+	defer manager.Cleanup()
+
+	window, err := manager.CreateWindow(config.WindowTitle, config.WindowWidth, config.WindowHeight, uint32(sdl.WindowShown))
+	if err != nil {
+		t.Fatalf("Failed to create window: %v", err)
+	}
+
+	renderer, err := manager.CreateRenderer(window, uint32(sdl.RendererAccelerated))
+	if err != nil {
+		t.Fatalf("Failed to create renderer: %v", err)
+	}
+
+	inputManager, err := manager.CreateInputManager()
+	if err != nil {
+		t.Fatalf("Failed to create input manager: %v", err)
+	}
+
+	// Test input processing performance
+	testDuration := 500 * time.Millisecond
+	start := time.Now()
+	eventCount := 0
+	pollCount := 0
+
+	for time.Since(start) < testDuration {
+		manager.StartFrame()
+
+		// Render frame
+		err = renderer.SetDrawColor(sdl.Color{R: 0, G: 255, B: 0, A: 255})
+		if err != nil {
+			t.Errorf("Failed to set draw color: %v", err)
+		}
+
+		err = renderer.Clear()
+		if err != nil {
+			t.Errorf("Failed to clear renderer: %v", err)
+		}
+
+		renderer.Present()
+
+		// Process input with timing
+		pollStart := time.Now()
+		events, shouldQuit := inputManager.PollEvents()
+		pollDuration := time.Since(pollStart)
+
+		pollCount++
+		eventCount += len(events)
+
+		if shouldQuit {
+			break
+		}
+
+		// Log significant input processing delays
+		if pollDuration > 5*time.Millisecond {
+			t.Logf("High input poll duration: %v", pollDuration)
+		}
+
+		manager.EndFrame()
+	}
+
+	elapsed := time.Since(start)
+	avgPollTime := elapsed / time.Duration(pollCount)
+
+	t.Logf("Input latency test results:")
+	t.Logf("  Test duration: %v", elapsed)
+	t.Logf("  Poll calls: %d", pollCount)
+	t.Logf("  Events processed: %d", eventCount)
+	t.Logf("  Average poll time: %v", avgPollTime)
+
+	// Input latency should be minimal
+	maxAcceptablePollTime := 2 * time.Millisecond
+	if avgPollTime > maxAcceptablePollTime {
+		t.Logf("Warning: Average poll time %v exceeds threshold %v",
+			avgPollTime, maxAcceptablePollTime)
+	}
+}
+
+// Helper functions for performance analysis
+
+func calculateAverage(durations []time.Duration) time.Duration {
+	if len(durations) == 0 {
+		return 0
+	}
+
+	var total time.Duration
+	for _, d := range durations {
+		total += d
+	}
+	return total / time.Duration(len(durations))
+}
+
+func calculateMin(durations []time.Duration) time.Duration {
+	if len(durations) == 0 {
+		return 0
+	}
+
+	min := durations[0]
+	for _, d := range durations[1:] {
+		if d < min {
+			min = d
+		}
+	}
+	return min
+}
+
+func calculateMax(durations []time.Duration) time.Duration {
+	if len(durations) == 0 {
+		return 0
+	}
+
+	max := durations[0]
+	for _, d := range durations[1:] {
+		if d > max {
+			max = d
+		}
+	}
+	return max
+}
+
+func calculateJitter(durations []time.Duration) time.Duration {
+	if len(durations) < 2 {
+		return 0
+	}
+
+	avg := calculateAverage(durations)
+	var varianceSum time.Duration
+
+	for _, d := range durations {
+		diff := d - avg
+		if diff < 0 {
+			diff = -diff
+		}
+		varianceSum += diff
+	}
+
+	return varianceSum / time.Duration(len(durations))
+}
+
+// formatFPS formats FPS value as string
+func formatFPS(fps int) string {
+	switch fps {
+	case 30:
+		return "30FPS"
+	case 60:
+		return "60FPS"
+	case 120:
+		return "120FPS"
+	default:
+		return "UnknownFPS"
+	}
+}

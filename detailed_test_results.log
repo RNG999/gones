@@ -1,0 +1,82 @@
+=== RUN   TestInputManagerCreation
+--- PASS: TestInputManagerCreation (0.00s)
+=== RUN   TestInputManagerKeyMapping
+--- PASS: TestInputManagerKeyMapping (0.00s)
+=== RUN   TestInputManagerControllerMapping
+    input_test.go:103: Controller mapping methods executed successfully
+--- PASS: TestInputManagerControllerMapping (0.00s)
+=== RUN   TestInputManagerControllerInfo
+    input_test.go:119: Controller 1 connected: false
+    input_test.go:123: Controller 1 name: ''
+--- PASS: TestInputManagerControllerInfo (0.00s)
+=== RUN   TestInputManagerKeyboardState
+    input_test.go:150: A key pressed: false
+--- PASS: TestInputManagerKeyboardState (0.00s)
+=== RUN   TestInputManagerMouseState
+    input_test.go:160: Mouse state: x=0, y=0, buttons=0x0
+--- PASS: TestInputManagerMouseState (0.00s)
+=== RUN   TestInputEventTypes
+--- PASS: TestInputEventTypes (0.00s)
+=== RUN   TestInputManagerErrorHandling
+--- PASS: TestInputManagerErrorHandling (0.00s)
+=== RUN   TestMockInputManager
+--- PASS: TestMockInputManager (0.00s)
+=== RUN   TestInputIntegrationScenarios
+--- PASS: TestInputIntegrationScenarios (0.00s)
+=== RUN   TestInputTimingAndPerformance
+    input_test.go:630: Processed 1000 events in 61.656µs
+--- PASS: TestInputTimingAndPerformance (0.00s)
+=== RUN   TestInputEventValidation
+--- PASS: TestInputEventValidation (0.00s)
+=== RUN   TestKeyboardEventDetection_KeyDown_ShouldGenerateInputEvent
+--- PASS: TestKeyboardEventDetection_KeyDown_ShouldGenerateInputEvent (0.00s)
+=== RUN   TestKeyboardEventDetection_KeyUp_ShouldGenerateInputEvent
+--- PASS: TestKeyboardEventDetection_KeyUp_ShouldGenerateInputEvent (0.00s)
+=== RUN   TestKeyboardToNESButtonMapping_DefaultLayout_ShouldMapCorrectly
+--- PASS: TestKeyboardToNESButtonMapping_DefaultLayout_ShouldMapCorrectly (0.00s)
+=== RUN   TestKeyboardToNESButtonMapping_CustomMapping_ShouldWork
+--- PASS: TestKeyboardToNESButtonMapping_CustomMapping_ShouldWork (0.00s)
+=== RUN   TestKeyboardToNESButtonMapping_RemoveMapping_ShouldWork
+--- PASS: TestKeyboardToNESButtonMapping_RemoveMapping_ShouldWork (0.00s)
+=== RUN   TestInputStateManagement_ButtonPressRelease_ShouldUpdateState
+--- PASS: TestInputStateManagement_ButtonPressRelease_ShouldUpdateState (0.00s)
+=== RUN   TestInputStateManagement_SimultaneousInputs_ShouldWork
+--- PASS: TestInputStateManagement_SimultaneousInputs_ShouldWork (0.00s)
+=== RUN   TestInputStateManagement_StateSnapshotDuringRead_ShouldBeConsistent
+--- PASS: TestInputStateManagement_StateSnapshotDuringRead_ShouldBeConsistent (0.00s)
+=== RUN   TestMultipleKeyboardCombinations_DiagonalMovement_ShouldWork
+--- PASS: TestMultipleKeyboardCombinations_DiagonalMovement_ShouldWork (0.00s)
+=== RUN   TestMultipleKeyboardCombinations_AttackAndMove_ShouldWork
+--- PASS: TestMultipleKeyboardCombinations_AttackAndMove_ShouldWork (0.00s)
+=== RUN   TestMultipleKeyboardCombinations_AllButtonsPressed_ShouldWork
+--- PASS: TestMultipleKeyboardCombinations_AllButtonsPressed_ShouldWork (0.00s)
+=== RUN   TestKeyboardInputIntegration_WithNESController_ShouldUpdateCorrectly
+--- PASS: TestKeyboardInputIntegration_WithNESController_ShouldUpdateCorrectly (0.00s)
+=== RUN   TestKeyboardInputIntegration_WithInputStateReadWrite_ShouldWork
+--- PASS: TestKeyboardInputIntegration_WithInputStateReadWrite_ShouldWork (0.00s)
+=== RUN   TestKeyboardInputIntegration_TwoPlayerGame_ShouldWorkIndependently
+--- PASS: TestKeyboardInputIntegration_TwoPlayerGame_ShouldWorkIndependently (0.00s)
+=== RUN   TestKeyboardInputPerformance_HighFrequencyInput_ShouldNotDegrade
+    keyboard_input_test.go:648: Processed 1000 events in 44.028µs (+Inf events/ms)
+--- PASS: TestKeyboardInputPerformance_HighFrequencyInput_ShouldNotDegrade (0.00s)
+=== RUN   TestKeyboardInputPerformance_KeyboardStateQuery_ShouldBeFast
+    keyboard_input_test.go:683: Performed 80000 keyboard state queries in 321.404µs
+--- PASS: TestKeyboardInputPerformance_KeyboardStateQuery_ShouldBeFast (0.00s)
+=== RUN   TestKeyboardInputErrorHandling_NilManager_ShouldNotCrash
+--- PASS: TestKeyboardInputErrorHandling_NilManager_ShouldNotCrash (0.00s)
+=== RUN   TestKeyboardInputErrorHandling_AfterCleanup_ShouldBeSafe
+--- PASS: TestKeyboardInputErrorHandling_AfterCleanup_ShouldBeSafe (0.00s)
+=== RUN   TestKeyboardInputErrorHandling_InvalidScancodes_ShouldBeHandled
+    keyboard_input_test.go:756: Invalid scancode 999 should not be pressed
+    keyboard_input_test.go:756: Invalid scancode 0 should not be pressed
+    keyboard_input_test.go:756: Invalid scancode 65535 should not be pressed
+--- FAIL: TestKeyboardInputErrorHandling_InvalidScancodes_ShouldBeHandled (0.00s)
+=== RUN   TestKeyboardInputEdgeCases_RapidPressRelease_ShouldWork
+--- PASS: TestKeyboardInputEdgeCases_RapidPressRelease_ShouldWork (0.00s)
+=== RUN   TestKeyboardInputEdgeCases_ConflictingDirections_ShouldAllowBoth
+--- PASS: TestKeyboardInputEdgeCases_ConflictingDirections_ShouldAllowBoth (0.00s)
+=== RUN   TestKeyboardInputEdgeCases_EventOrderDependency_ShouldBeConsistent
+--- PASS: TestKeyboardInputEdgeCases_EventOrderDependency_ShouldBeConsistent (0.00s)
+FAIL
+FAIL	command-line-arguments	0.008s
+FAIL

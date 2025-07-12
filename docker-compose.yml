@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  gones:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+        BUILD_USER: ${BUILD_USER:-docker}
+    image: gones:${VERSION:-dev}
+    container_name: gones
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - HOME=/app
+    
+    # Volumes for persistent data
+    volumes:
+      - ./roms:/app/roms:ro          # ROM files (read-only)
+      - gones-saves:/app/saves       # Save files
+      - gones-states:/app/states     # Save states
+      - gones-screenshots:/app/screenshots  # Screenshots
+      - gones-config:/app/config     # Configuration
+      
+      # X11 forwarding for GUI (Linux)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      
+    # Network access
+    network_mode: host
+    
+    # For X11 forwarding and audio
+    devices:
+      - /dev/dri:/dev/dri           # GPU access
+    
+    # User configuration
+    user: "${UID:-1001}:${GID:-1001}"
+    
+    # Security
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    
+    # Command override for development
+    # command: ["-rom", "/app/roms/game.nes"]
+
+  # Development service with live reload
+  gones-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: gones:dev
+    container_name: gones-dev
+    profiles: ["dev"]
+    
+    volumes:
+      - .:/app:cached
+      - gones-dev-cache:/go/pkg/mod
+      
+    environment:
+      - CGO_ENABLED=1
+      
+    working_dir: /app
+    
+    # Keep container running for development
+    tty: true
+    stdin_open: true
+    
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  gones-saves:
+    driver: local
+  gones-states:
+    driver: local
+  gones-screenshots:
+    driver: local
+  gones-config:
+    driver: local
+  gones-dev-cache:
+    driver: local
+
+networks:
+  default:
+    name: gones-network

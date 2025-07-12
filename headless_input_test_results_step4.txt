@@ -1,0 +1,3 @@
+testing: warning: no tests to run
+PASS
+ok  	gones/test/integration	0.006s [no tests to run]

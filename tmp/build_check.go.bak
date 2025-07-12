@@ -1,0 +1,33 @@
+package main
+
+import (
+	"fmt"
+	"gones/internal/bus"
+)
+
+func main() {
+	// Simple test to verify bus implementation compiles
+	b := bus.New()
+	if b != nil {
+		fmt.Println("Bus created successfully")
+	}
+	
+	// Test key methods exist
+	b.Reset()
+	b.Step()
+	cycles := b.GetCycleCount()
+	frames := b.GetFrameCount()
+	isDMA := b.IsDMAInProgress()
+	
+	fmt.Printf("Cycles: %d, Frames: %d, DMA: %v\n", cycles, frames, isDMA)
+	
+	// Test Frame method
+	b.Frame()
+	
+	// Test logging methods
+	b.EnableExecutionLogging()
+	log := b.GetExecutionLog()
+	fmt.Printf("Execution log length: %d\n", len(log))
+	
+	fmt.Println("All bus methods accessible")
+}

@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.nesdev.org)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(go test:*)",
+      "Bash(grep:*)",
+      "Bash(go build:*)",
+      "Bash(go run:*)",
+      "Bash(./gones:*)",
+      "Bash(rm:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(make:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(ldd:*)",
+      "Bash(pkg-config:*)",
+      "WebFetch(domain:emulation.gametechwiki.com)",
+      "WebFetch(domain:hlc6502.web.fc2.com)",
+      "WebFetch(domain:archive.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(DISPLAY=:99 go run test_input_latching.go)",
+      "WebFetch(domain:bugzmanov.github.io)",
+      "WebFetch(domain:e-tipsmemo.hatenablog.com)",
+      "Bash(md5sum:*)"
+    ],
+    "deny": []
+  }
+}

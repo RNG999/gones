@@ -1,0 +1,81 @@
+{
+  "window": {
+    "width": 800,
+    "height": 600,
+    "fullscreen": false,
+    "resizable": true,
+    "centered": true,
+    "scale": 2
+  },
+  "video": {
+    "vsync": true,
+    "frame_skip": 0,
+    "aspect_ratio": "4:3",
+    "filter": "nearest",
+    "brightness": 1,
+    "contrast": 1,
+    "saturation": 1,
+    "show_overscan": false,
+    "crop_overscan": true
+  },
+  "audio": {
+    "enabled": true,
+    "sample_rate": 44100,
+    "buffer_size": 1024,
+    "volume": 0.8,
+    "channels": 2,
+    "latency": 50
+  },
+  "input": {
+    "player1_keys": {
+      "up": "W",
+      "down": "S",
+      "left": "A",
+      "right": "D",
+      "a": "J",
+      "b": "K",
+      "start": "Return",
+      "select": "Space"
+    },
+    "player2_keys": {
+      "up": "Up",
+      "down": "Down",
+      "left": "Left",
+      "right": "Right",
+      "a": "N",
+      "b": "M",
+      "start": "RShift",
+      "select": "RCtrl"
+    },
+    "controller_deadzone": 0.1,
+    "autofire_rate": 10,
+    "enable_autofire": false
+  },
+  "emulation": {
+    "region": "NTSC",
+    "frame_rate": 60,
+    "cycle_accuracy": true,
+    "enable_sound": true,
+    "rewind_buffer": 30,
+    "save_state_slots": 10,
+    "auto_save": true,
+    "pause_on_focus_loss": true
+  },
+  "debug": {
+    "show_fps": false,
+    "show_debug_info": false,
+    "enable_logging": false,
+    "log_level": "INFO",
+    "cpu_tracing": false,
+    "ppu_debugging": false,
+    "memory_debugging": false
+  },
+  "paths": {
+    "roms": "./roms",
+    "save_data": "./saves",
+    "save_states": "./states",
+    "screenshots": "./screenshots",
+    "config": "./config",
+    "logs": "./logs"
+  }
+}
