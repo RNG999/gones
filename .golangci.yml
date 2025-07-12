@@ -1,0 +1,131 @@
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - tmp
+    - dist
+    - vendor
+  skip-files:
+    - ".*_test.go"
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: gones/
+  govet:
+    check-shadowing: true
+  revive:
+    severity: warning
+    confidence: 0.8
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+  staticcheck:
+    go: "1.23"
+    checks: ["all"]
+  unused:
+    go: "1.23"
+  misspell:
+    locale: US
+  lll:
+    line-length: 120
+  gocyclo:
+    min-complexity: 15
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+        allow:
+          - $gostd
+          - github.com/veandco/go-sdl2
+          - gones/internal
+  funlen:
+    lines: 80
+    statements: 50
+  gocognit:
+    min-complexity: 20
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - revive
+    - misspell
+    - lll
+    - dupl
+    - goconst
+    - gocyclo
+    - funlen
+    - gocognit
+    - depguard
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+        - gocognit
+    
+    # Exclude known false positives
+    - text: "weak cryptographic primitive"
+      linters:
+        - gosec
+    
+    # Exclude SDL-related import issues
+    - path: internal/sdl/
+      text: "could not import"
+      linters:
+        - typecheck
+        
+    # Allow long lines in auto-generated files
+    - path: internal/cpu/cpu\.go
+      text: "line is .*characters"
+      linters:
+        - lll
+        
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

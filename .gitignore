@@ -1,0 +1,105 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Go workspace file
+go.work
+
+# Build artifacts
+gones
+/gones
+*.o
+*.a
+
+# Go build cache
+.cache/
+.build/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ROM files (optional - uncomment if you don't want to track ROMs)
+# *.nes
+# *.rom
+# roms/
+
+# Debug/test files
+debug_*
+test_*
+*_debug.go
+*_test_*.go
+
+# Screenshot/frame output files
+*.ppm
+*.png
+frame_*.ppm
+screenshot_*.png
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Documentation build artifacts
+/docs/_build/
+
+# Local configuration files
+config/local_*
+*.local.json
+
+# Development scripts that shouldn't be committed
+dev_*
+local_*
+
+# Go module proxy cache
+/pkg/mod/
+
+# Any generated files
+generated_*
+
+# Profiling data
+*.prof
+*.trace
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Benchmark results
+bench.out
+
+# Dependencies
+vendor/
+
+# Any experimental or work-in-progress files
+experiment_*
+wip_*
+scratch_*
